@@ -1,9 +1,14 @@
+import Image from "next/image"
 import Link from "next/link"
 
 export default function Footer() {
     return (
-        <footer className="bg-gray-900/70 border-t border-gray-800 py-12">
-            <div className="container mx-auto px-4">
+        <footer className="border-t border-gray-800 py-12 relative overflow-hidden">
+            <div className="absolute bottom-0 -left-1/8 z-0">
+                <Image src="/green-gradient.png" alt="bg" width={500} height={500} />
+            </div>
+
+            <div className="relative z-10 container mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
                         <div className="flex items-center gap-2 mb-4">
@@ -91,7 +96,7 @@ export default function Footer() {
                     </div>
                 </div>
 
-                <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500">
+                <div className="border-t border-gray-800 mt-12 pt-8 text-center text-white">
                     <p>© {new Date().getFullYear()} Velt. All rights reserved.</p>
                 </div>
             </div>

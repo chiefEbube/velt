@@ -3,7 +3,7 @@ import FeatureCard from "./FeatureCard"
 
 export default function KeyFeatures() {
     return (
-        <section id="features" className="container mx-auto px-4 py-20">
+        <section id="features" className="container mx-auto px-4 py-20 ">
             <div className="text-center mb-16">
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">Key Features</h2>
                 <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto"></div>

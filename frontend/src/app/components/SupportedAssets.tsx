@@ -13,37 +13,31 @@ export default function SupportedAssets() {
                     name="Bitcoin"
                     symbol="BTC"
                     color="from-amber-500 to-orange-600"
-                    iconPath="/placeholder.svg?height=80&width=80"
+                    iconPath="/Bitcoin.svg?height=80&width=80"
                 />
                 <CryptoCard
                     name="Ethereum"
                     symbol="ETH"
                     color="from-indigo-400 to-blue-600"
-                    iconPath="/placeholder.svg?height=80&width=80"
+                    iconPath="/Ethereum.svg?height=80&width=80"
                 />
                 <CryptoCard
                     name="USDT"
                     symbol="USDT"
                     color="from-green-400 to-green-600"
-                    iconPath="/placeholder.svg?height=80&width=80"
-                />
-                <CryptoCard
-                    name="USDC"
-                    symbol="USDC"
-                    color="from-blue-400 to-blue-600"
-                    iconPath="/placeholder.svg?height=80&width=80"
+                    iconPath="/Usdt.svg?height=80&width=80"
                 />
                 <CryptoCard
                     name="Solana"
                     symbol="SOL"
                     color="from-purple-400 to-purple-600"
-                    iconPath="/placeholder.svg?height=80&width=80"
+                    iconPath="/Solana.svg?height=80&width=80"
                 />
                 <CryptoCard
                     name="Avalanche"
                     symbol="AVAX"
                     color="from-red-400 to-red-600"
-                    iconPath="/placeholder.svg?height=80&width=80"
+                    iconPath="/Avalanche.svg?height=80&width=80"
                 />
             </div>
 
