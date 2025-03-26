@@ -79,7 +79,7 @@ export default function GetStarted() {
                 <Wallet className="h-16 w-16 mx-auto mb-4 text-[#00f5ff]" />
                 <h2 className="text-xl font-bold mb-2">Connect Your Wallet</h2>
                 <p className="text-white mb-6">
-                  You need to connect your wallet to access Velt's lending and borrowing features.
+                  {`You need to connect your wallet to access Velt's lending and borrowing features.`}
                 </p>
                 <Button size="lg" className="logo-bg text-[#1a1a2e] hover:opacity-90" onClick={connectWallet}>
                   Connect Wallet
