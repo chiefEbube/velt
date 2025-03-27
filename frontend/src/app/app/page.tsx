@@ -70,7 +70,7 @@ export default function GetStarted() {
       <main className="flex-1 flex items-center justify-center py-12 mb-20">
         <div className="container px-4 md:px-6 w-full">
           <div className="flex flex-col items-center text-center mb-8 space-y-2">
-            <p className="text-gray-100 font-bold text-xl">
+            <p className="text-gray-100 font-bold text-lg sm:text-xl">
               {walletConnected
                 ? "Choose whether you want to lend or borrow crypto assets."
                 : "Connect your wallet to start lending or borrowing crypto assets."}
@@ -113,8 +113,8 @@ export default function GetStarted() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-10">
-              <AccountSummary />
               <TabsColumn />
+              <AccountSummary />
             </div>
           )}
           {!walletConnected && (
