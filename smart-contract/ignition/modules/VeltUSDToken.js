@@ -1,5 +1,7 @@
-module.exports = buildModule("LendingPoolModule", (m) => {
-  const velt = m.contract("VeltUSD", [], { });
+const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 
-  return { velt };
+module.exports = buildModule("LockModule", (m) => {
+  const lock = m.contract("Lock", [], {});
+
+  return { lock };
 });
