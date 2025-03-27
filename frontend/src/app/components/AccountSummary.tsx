@@ -38,13 +38,13 @@ export default function AccountSummary() {
                     </div>
 
                     <div className="divide-y divide-white/10">
-                        <div className="grid grid-cols-5 p-3 text-2xs sm:text-sm items-center">
+                        <div className="grid grid-cols-5 p-3 text-[10px] sm:text-sm items-center">
                             <div className="font-medium">ETH</div>
                             <div className="text-green-400">Lending</div>
                             <div>1.5 ETH</div>
                             <div>4.2%</div>
                             <div>
-                                <span className="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400">Active</span>
+                                <span className="px-2 py-1 rounded-full text-[10px] bg-green-500/20 text-green-400">Active</span>
                             </div>
                         </div>
 
