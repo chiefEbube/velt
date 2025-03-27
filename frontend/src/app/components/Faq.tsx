@@ -1,8 +1,9 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/app/components/ui/accordion"
+import Image from "next/image"
 
 export default function Faq() {
     return (
-        <section id="faq" className="py-20">
+        <section id="faq" className="py-20 relative">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
@@ -84,6 +85,9 @@ export default function Faq() {
                         </AccordionItem>
                     </Accordion>
                 </div>
+            </div>
+            <div className="absolute -top-10 left-0 w-20 h-20 md:w-32 md:h-32">
+                <Image src="/Bitcoin3d.svg" alt="faq" width={200} height={200} />
             </div>
         </section>
     )

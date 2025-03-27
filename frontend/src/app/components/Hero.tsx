@@ -51,6 +51,9 @@ export default function Hero() {
             <div className="absolute -bottom-1/2 right-0">
                 <Image src="/Looper-3.png" alt="bg" width={500} height={300} />
             </div>
+            <div className="absolute -bottom-1/2 left-0">
+                <Image src="/Looper-2.png" alt="bg" width={500} height={300} />
+            </div>
         </section>
     )
 }
