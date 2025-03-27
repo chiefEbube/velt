@@ -2,32 +2,80 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Wallet, ChevronDown, LogOut } from "lucide-react"
+import { ArrowLeft, Wallet, CheckCircle, AlertCircle } from "lucide-react"
 
 import { Button } from "@/app/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/app/components/ui/dropdown-menu"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import AccountSummary from "../components/AccountSummary"
 import TabsColumn from "../components/TabsColumn"
+import { Eip1193Provider } from "ethers"
+
+declare global {
+  interface Window {
+    ethereum: Eip1193Provider;
+  }
+}
 
 export default function GetStarted() {
   const [walletConnected, setWalletConnected] = useState(false)
-  const [walletAddress, setWalletAddress] = useState("")
+  const [account, setAccount] = useState("")
+  const [alertInfo, setAlertInfo] = useState({ show: false, type: "", message: "" })
 
-  const connectWallet = () => {
-    // In a real app, this would integrate with MetaMask or another wallet provider
-    const mockAddress = "0x" + Math.random().toString(16).slice(2, 12) + "..."
-    setWalletAddress(mockAddress)
-    setWalletConnected(true)
+
+    // Check if MetaMask is installed
+    const checkIfWalletIsConnected = async () => {
+      try {
+        const { ethereum } = window
+        if (!ethereum) {
+          showAlert("error", "MetaMask is not installed. Please install MetaMask to continue.")
+          return false
+        }
+        return true
+      } catch (error) {
+        console.error(error)
+        return false
+      }
+    }
+
+   // Connect wallet
+   const handleConnectWallet = async () => {
+    try {
+      const hasWallet = await checkIfWalletIsConnected()
+      if (!hasWallet) return
+
+      const { ethereum } = window
+      const accounts = await ethereum.request({ method: "eth_requestAccounts" })
+
+      if (accounts.length > 0) {
+        const account = accounts[0]
+        setAccount(account)
+        setWalletConnected(true)
+      } else {
+        showAlert("error", "No authorized accounts found.")
+      }
+    } catch (error: unknown) {
+      console.error(error)
+      if ((error as { code: number }).code === 4001) {
+        showAlert("error", "User rejected the connection request.")
+      } else {
+        showAlert("error", "Error connecting wallet. Please try again.")
+      }
+    }
   }
 
-  const disconnectWallet = () => {
-    setWalletConnected(false)
-    setWalletAddress("")
+   // Show alert
+   const showAlert = (type: string, message: string) => {
+    setAlertInfo({ show: true, type, message })
+
+    // Hide alert after 5 seconds
+    setTimeout(() => {
+      setAlertInfo({ show: false, type: "", message: "" })
+    }, 5000)
+  }
+
+  // Format address for display
+  const formatAddress = (address: string) => {
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
   }
 
   return (
@@ -41,36 +89,63 @@ export default function GetStarted() {
             <span className="text-xl font-bold">Velt</span>
           </div>
           <div className="flex items-center gap-4">
-            {walletConnected && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10 hover:text-white bg-transparent">
-                    <Wallet className="mr-2 h-4 w-4 text-blue-400" />
-                    {walletAddress}
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-[#1a1a3a] border-white/10 text-white">
-                  <DropdownMenuItem className="hover:bg-[#1a1a4a] cursor-pointer" onClick={disconnectWallet}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Disconnect
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+          {!walletConnected ? (
+            <Button
+              onClick={handleConnectWallet}
+              className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white"
+            >
+              <Wallet className="mr-2 h-4 w-4" />
+              Connect Wallet
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-full">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <span className="text-sm font-medium">{formatAddress(account)}</span>
+            </div>
+          )}
             <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white transition-colors" asChild>
               <Link href="/">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Home
+                <span className="hidden md:flex">Back to Home</span>
               </Link>
             </Button>
           </div>
         </div>
       </nav>
+
+       {/* Alerts */}
+       {alertInfo.show && (
+          <Alert
+            className={`mb-6 ${alertInfo.type === "error"
+                ? "bg-red-900/20 border-red-900 text-red-300"
+                : alertInfo.type === "warning"
+                  ? "bg-yellow-900/20 border-yellow-900 text-yellow-300"
+                  : alertInfo.type === "success"
+                    ? "bg-green-900/20 border-green-900 text-green-300"
+                    : "bg-blue-900/20 border-blue-900 text-blue-300"
+              }`}
+          >
+            {alertInfo.type === "error" && <AlertCircle className="h-4 w-4" />}
+            {alertInfo.type === "warning" && <AlertCircle className="h-4 w-4" />}
+            {alertInfo.type === "success" && <CheckCircle className="h-4 w-4" />}
+            {alertInfo.type === "info" && <AlertCircle className="h-4 w-4" />}
+            <AlertTitle>
+              {alertInfo.type === "error"
+                ? "Error"
+                : alertInfo.type === "warning"
+                  ? "Warning"
+                  : alertInfo.type === "success"
+                    ? "Success"
+                    : "Information"}
+            </AlertTitle>
+            <AlertDescription>{alertInfo.message}</AlertDescription>
+          </Alert>
+        )}
+
       <main className="flex-1 flex items-center justify-center py-12 mb-20">
         <div className="container px-4 md:px-6 w-full">
           <div className="flex flex-col items-center text-center mb-8 space-y-2">
-            <p className="text-gray-100 font-bold text-lg sm:text-xl">
+            <p className="text-gray-100 font-bold text-lg md:text-xl">
               {walletConnected
                 ? "Choose whether you want to lend or borrow crypto assets."
                 : "Connect your wallet to start lending or borrowing crypto assets."}
@@ -90,7 +165,7 @@ export default function GetStarted() {
                 <Button
                   size="lg"
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)]"
-                  onClick={connectWallet}
+                  onClick={handleConnectWallet}
                 >
                   Connect Wallet
                 </Button>
