@@ -23,10 +23,7 @@ export default function TabsColumn() {
                     <div className="space-y-2">
                       <div className="text-sm font-medium">Select Asset</div>
                       <select className="w-full rounded-md border border-white/20 bg-[#1a1a4a] px-3 py-2 text-white">
-                        <option>Ethereum (ETH)</option>
-                        <option>Bitcoin (BTC)</option>
-                        <option>USDC</option>
-                        <option>USDT</option>
+                        <option>Velt Token (VLT)</option>
                       </select>
                     </div>
                     <div className="space-y-2">
@@ -37,7 +34,7 @@ export default function TabsColumn() {
                           placeholder="0.0"
                           className="flex-1 bg-transparent px-3 py-2 text-sm outline-none text-white"
                         />
-                        <div className="flex items-center border-l border-white/20 bg-[#1a1a3a] px-3 text-sm">ETH</div>
+                        <div className="flex items-center border-l border-white/20 bg-[#1a1a3a] px-3 text-sm">VLT</div>
                       </div>
                       <div className="text-xs text-gray-300">Est. APY: 4.5%</div>
                     </div>
@@ -49,10 +46,7 @@ export default function TabsColumn() {
                     <div className="space-y-2">
                       <div className="text-sm font-medium">Collateral Asset</div>
                       <select className="w-full rounded-md border border-white/20 bg-[#1a1a4a] px-3 py-2 text-white">
-                        <option>Ethereum (ETH)</option>
-                        <option>Bitcoin (BTC)</option>
-                        <option>USDC</option>
-                        <option>USDT</option>
+                        <option>Metis Sepolia (tMetis)</option>
                       </select>
                     </div>
                     <div className="space-y-2">
@@ -63,7 +57,7 @@ export default function TabsColumn() {
                           placeholder="0.0"
                           className="flex-1 bg-transparent px-3 py-2 text-sm outline-none text-white"
                         />
-                        <div className="flex items-center border-l border-white/20 bg-[#1a1a3a] px-3 text-sm">USDC</div>
+                        <div className="flex items-center border-l border-white/20 bg-[#1a1a3a] px-3 text-sm">VLT</div>
                       </div>
                       <div className="text-xs text-gray-300">Interest Rate: 2.5%</div>
                     </div>
