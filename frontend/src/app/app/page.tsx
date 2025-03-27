@@ -23,7 +23,7 @@ export default function GetStarted() {
 
 
     // Check if MetaMask is installed
-    const checkIfWalletIsConnected = async () => {
+    const checkIfWalletIsAvalaible = async () => {
       try {
         const { ethereum } = window
         if (!ethereum) {
@@ -40,7 +40,7 @@ export default function GetStarted() {
    // Connect wallet
    const handleConnectWallet = async () => {
     try {
-      const hasWallet = await checkIfWalletIsConnected()
+      const hasWallet = await checkIfWalletIsAvalaible()
       if (!hasWallet) return
 
       const { ethereum } = window
@@ -80,7 +80,7 @@ export default function GetStarted() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#0A0A0F] text-white">
-      <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#1a1a2e]/95 backdrop-blur supports-[backdrop-filter]:bg-[#1a1a2e]/60">
+      <nav className="px-4 sticky top-0 z-50 w-full border-b border-white/10 bg-[#1a1a2e]/95 backdrop-blur supports-[backdrop-filter]:bg-[#1a1a2e]/60">
         <div className="container mx-auto flex items-center justify-between py-4">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center font-bold text-xl">
