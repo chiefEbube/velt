@@ -38,7 +38,7 @@ export default function AccountSummary() {
                     </div>
 
                     <div className="divide-y divide-white/10">
-                        <div className="grid grid-cols-5 p-3 text-xs sm:text-sm items-center">
+                        <div className="grid grid-cols-5 p-3 text-2xs sm:text-sm items-center">
                             <div className="font-medium">ETH</div>
                             <div className="text-green-400">Lending</div>
                             <div>1.5 ETH</div>
