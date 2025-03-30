@@ -1,64 +1,54 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IVelt} from "./interfaces/IVelt.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract LendingPool is Ownable {
-    IVeltToken public veltToken;
-    uint256 public exchangeRate = 100;
+contract LendingPool is ReentrancyGuard {
+    IVelt public veltToken;
 
-    mapping(address => uint256) public userDeposits;
-
-    event Deposited(
-        address indexed user,
-        uint256 metisAmount,
-        uint256 tokenAmount
-    );
-    event Withdrawn(address indexed user, uint256 metisAmount);
-
-    constructor(address _veltToken) Ownable(msg.sender) {
-        veltToken = IVeltToken(_veltToken);
+    constructor(address _veltToken) {
+        veltToken = IVelt(_veltToken);
     }
 
-    function setExchangeRate(uint256 _rate) external onlyOwner {
-        exchangeRate = _rate;
+    struct DepositInfo {
+        uint amount; // Amount of tokens deposited
+        // uint unlockTime; // Time when the deposit can be withdrawn
     }
 
-    function deposit() public payable {
-        require(msg.value > 0, "Must send METIS");
+    mapping(address => DepositInfo) public userDeposits;
 
-        uint256 mintAmount = msg.value * exchangeRate;
-        userDeposits[msg.sender] += msg.value;
+    event Deposit(address indexed user, uint amount, uint time);
+    event Withdrawal(address indexed user, uint amount, uint time);
 
-        veltToken.mint(msg.sender, mintAmount);
+    function deposit(address _onBehalfOf) public payable {
+        require(msg.value > 0, "Deposit amount must be greater than zero");
 
-        emit Deposited(msg.sender, msg.value, mintAmount);
+        userDeposits[_onBehalfOf].amount += msg.value;
+        // userDeposits[_onBehalfOf].unlockTime = block.timestamp + 30 days; // ⏳ Reset unlock time per user
+
+        // Mint VLT tokens equal to METIS deposited (1:1 ratio for now)
+        veltToken.mint(_onBehalfOf, msg.value);
+
+        emit Deposit(_onBehalfOf, msg.value, block.timestamp);
     }
 
-    function withdraw(uint256 metisAmount) external {
+    function withdraw(uint256 _amount) public nonReentrant {
+        require(_amount > 0, "Withdraw amount must be greater than zero");
         require(
-            userDeposits[msg.sender] >= metisAmount,
-            "Insufficient deposit"
+            userDeposits[msg.sender].amount >= _amount,
+            "Insufficient balance"
         );
 
-        uint256 veltToBurn = metisAmount * exchangeRate;
-        userDeposits[msg.sender] -= metisAmount;
+        // Burn VLT tokens before releasing METIS
+        veltToken.burn(msg.sender, _amount);
 
-        veltToken.burn(msg.sender, veltToBurn);
-        payable(msg.sender).transfer(metisAmount);
+        // Update user balance
+        userDeposits[msg.sender].amount -= _amount;
 
-        emit Withdrawn(msg.sender, metisAmount);
+        // Transfer METIS back to user
+        payable(msg.sender).transfer(_amount);
+
+        emit Withdrawal(msg.sender, _amount, block.timestamp);
     }
-
-    receive() external payable {
-        deposit();
-    }
-}
-
-// Interface for the Platform Token contract (allows minting and burning)
-interface IVeltToken is IERC20 {
-    function mint(address to, uint256 amount) external;
-
-    function burn(address from, uint256 amount) external;
 }

@@ -12,16 +12,17 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract VeltToken is ERC20, Ownable, ERC20Burnable, ERC20Permit {
     address public lendingPool;
 
+    event Mint(address indexed to, uint256 amount);
+    event Burn(address indexed from, uint256 amount);
+    event LendingPoolUpdated(address indexed newLendingPool);
+
     constructor(
-        address recipient,
         address initialOwner
     )
         ERC20("Velt Token", "VELT")
         Ownable(initialOwner)
         ERC20Permit("VeltToken")
-    {
-        _mint(recipient, 1000000000000 * 10 ** decimals());
-    }
+    {}
 
     modifier onlyLendingPool() {
         require(msg.sender == lendingPool, "Not authorized");
@@ -30,13 +31,16 @@ contract VeltToken is ERC20, Ownable, ERC20Burnable, ERC20Permit {
 
     function setLendingPool(address _lendingPool) external onlyOwner {
         lendingPool = _lendingPool;
+        emit LendingPoolUpdated(_lendingPool);
     }
 
     function mint(address to, uint256 amount) public onlyLendingPool {
         _mint(to, amount);
+        emit Mint(to, amount);
     }
 
     function burn(address from, uint256 amount) public onlyLendingPool {
         _burn(from, amount);
+        emit Burn(from, amount);
     }
 }
