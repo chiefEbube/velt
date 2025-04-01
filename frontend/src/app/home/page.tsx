@@ -9,6 +9,8 @@ import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { injected } from 'wagmi/connectors'
 import { toast } from "sonner"
 import { useEffect, useState } from "react"
+import Image from "next/image"
+
 
 export default function GetStarted() {
   const [isClient, setIsClient] = useState(false);
@@ -78,55 +80,84 @@ export default function GetStarted() {
         </div>
       </nav>
 
-      <main className="flex-1 flex items-center justify-center py-12 mb-20">
-        <div className="container px-4 md:px-6 w-full">
-          <div className="flex flex-col items-center text-center mb-8 space-y-2">
-            <p className="text-gray-100 font-bold text-lg md:text-xl">
-              {account.isConnected
-                ? "Choose whether you want to lend or borrow crypto assets."
-                : "Connect your wallet to start lending or borrowing crypto assets."}
-            </p>
-          </div>
-
+      <main className="flex-1 flex items-center justify-center mb-2">
+        <div className="container px-4 md:px-6 w-full  py-8">
           {!account.isConnected ? (
-            <div className="flex flex-col items-center space-y-6">
-              <div className="relative w-full overflow-hidden rounded-xl border border-white/10 bg-[#1a1a3a] p-8 shadow-xl text-center">
-                <Wallet className="h-16 w-16 mx-auto mb-4 text-blue-400" />
-                <h2 className="text-xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-                  Connect Your Wallet
-                </h2>
-                <p className="text-gray-300 mb-6">
-                  {`You need to connect your wallet to access Velt's lending and borrowing features.`}
+            <>
+              <div className="flex flex-col items-center text-center mb-8">
+                <p className="text-gray-100 font-bold text-lg md:text-xl">
+                  {!account.isConnected && "Connect your wallet to start lending or borrowing crypto assets."}
                 </p>
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)]"
-                  onClick={handleConnectWallet}
-                >
-                  Connect Wallet
-                </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                <div className="p-4 rounded-lg border border-white/10 bg-[#1a1a3a] text-center">
-                  <h3 className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
-                    Lenders
-                  </h3>
-                  <p className="text-gray-300 text-sm">Earn passive income by lending your crypto assets</p>
+              <div className="flex flex-col items-center space-y-6">
+                <div className="relative w-full overflow-hidden rounded-xl border border-white/10 bg-[#1a1a3a] p-8 shadow-xl text-center">
+                  <Wallet className="h-16 w-16 mx-auto mb-4 text-blue-400" />
+                  <h2 className="text-xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                    Connect Your Wallet
+                  </h2>
+                  <p className="text-gray-300 mb-6">
+                    {`You need to connect your wallet to access Velt's lending and borrowing features.`}
+                  </p>
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)]"
+                    onClick={handleConnectWallet}
+                  >
+                    Connect Wallet
+                  </Button>
                 </div>
-                <div className="p-4 rounded-lg border border-white/10 bg-[#1a1a3a] text-center">
-                  <h3 className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
-                    Borrowers
-                  </h3>
-                  <p className="text-gray-300 text-sm">Get liquidity without selling your crypto assets</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                  <div className="p-4 rounded-lg border border-white/10 bg-[#1a1a3a] text-center">
+                    <h3 className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
+                      Lenders
+                    </h3>
+                    <p className="text-gray-300 text-sm">Earn passive income by lending your crypto assets</p>
+                  </div>
+                  <div className="p-4 rounded-lg border border-white/10 bg-[#1a1a3a] text-center">
+                    <h3 className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
+                      Borrowers
+                    </h3>
+                    <p className="text-gray-300 text-sm">Get liquidity without selling your crypto assets</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </>
           ) : (
-            <div className="grid md:grid-cols-2 gap-10">
-              <TabsColumn />
-              <AccountSummary balance={"000"} />
-            </div>
+            <>
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-10 h-10">
+                    <Image src="/metis.png" alt="metis logo" width={200} height={200} />
+                  </div>
+                  <h1 className="text-2xl font-bold">Metis</h1>
+                </div>
+
+                <div className="flex">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <div className="text-gray-400 text-sm flex items-center gap-1">Net worth</div>
+                      <div className="text-xl md:text-2xl font-bold">$0.00</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-sm flex items-center gap-1">
+                        Net APY
+                      </div>
+                      <div className="text-xl md:text-2xl font-bold">0%</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-sm flex items-center gap-1">Health factor</div>
+                      <span className="text-xl md:text-2xl font-bold text-yellow-500">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-10">
+                <TabsColumn />
+                <AccountSummary balance={"000"} />
+              </div>
+            </>
           )}
           {!account.isConnected && (
             <div className="mt-6 text-center text-sm text-gray-300">
