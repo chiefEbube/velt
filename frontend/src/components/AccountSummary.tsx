@@ -1,6 +1,10 @@
+"use client"
+
+import { fetchUsdtValue } from "@/lib/fetchUsdtValue";
 import { Button } from "./ui/button";
 
-export default function AccountSummary({balance}: {balance: string}) {
+export default function AccountSummary({ balance }: { balance: string }) {
+    const usdt = fetchUsdtValue(balance)
     return (
         <div className="relative w-full overflow-hidden rounded-xl border border-white/10 bg-[#1a1a3a] p-6 shadow-xl">
             <h2 className="text-xl font-bold mb-4 text-gray-100">
@@ -10,8 +14,8 @@ export default function AccountSummary({balance}: {balance: string}) {
             <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <div className="p-4 rounded-lg bg-[#1a1a4a] border border-white/10">
                     <div className="text-sm text-gray-300 mb-1">Total Balance</div>
-                    <div className="text-2xl font-bold">{parseFloat(balance).toFixed(4)} tMETIS</div>
-                    <div className="text-sm text-gray-300">≈ $0.00 USD</div>
+                    <div className="text-2xl font-bold">{parseFloat(balance).toFixed(2)} tMETIS</div>
+                    <div className="text-sm text-gray-300">≈ {`$${usdt} USD`}</div>
                 </div>
                 <div className="p-4 rounded-lg bg-[#1a1a4a] border border-white/10">
                     <div className="text-sm text-gray-300 mb-1">Available to Borrow</div>

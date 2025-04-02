@@ -10,13 +10,19 @@ import { injected } from 'wagmi/connectors'
 import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import Image from "next/image"
+import { useBalance } from "wagmi"
+import { metisSepolia } from "@/wagmi"
 
 
 export default function GetStarted() {
   const [isClient, setIsClient] = useState(false);
-  const account = useAccount()
+  const { address, isConnected } = useAccount()
   const { connectAsync, error } = useConnect()
   const { disconnect } = useDisconnect()
+  const { data, isError } = useBalance({
+    address,
+    chainId: metisSepolia.id,
+  });
 
   // Connect wallet
   const handleConnectWallet = async () => {
@@ -38,6 +44,9 @@ export default function GetStarted() {
 
   if (!isClient) return null;
 
+  if (isError) toast("Error fetching balance")
+  const balance = data?.value ? (Number(data.value) / 10 ** data.decimals).toFixed(4) : "0.0000";
+
   return (
     <div className="flex min-h-screen flex-col bg-[#0A0A0F] text-white">
       <nav className="px-4 sticky top-0 z-50 w-full border-b border-white/10 bg-[#1a1a2e]/95 backdrop-blur supports-[backdrop-filter]:bg-[#1a1a2e]/60">
@@ -49,7 +58,7 @@ export default function GetStarted() {
             <span className="text-xl font-bold">Velt</span>
           </div>
           <div className="flex items-center gap-4">
-            {!account.isConnected ? (
+            {!isConnected ? (
               <>
                 <Button
                   onClick={handleConnectWallet}
@@ -64,13 +73,13 @@ export default function GetStarted() {
                 <div className="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-full">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   <span className="text-sm font-medium">
-                    {account.address
-                      ? `${account.address.slice(0, 6)}...${account.address.slice(-4)}`
+                    {address
+                      ? `${address.slice(0, 6)}...${address.slice(-4)}`
                       : ""}
                   </span>
                 </div>
                 <Button className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white" onClick={handleDisconnect} asChild>
-                  <span className="hidden md:flex">{account.isReconnecting ? "Disconnecting" : "Disconnect"}</span>
+                  <span className="hidden md:flex">Disconnect</span>
 
                 </Button>
               </>
@@ -82,11 +91,11 @@ export default function GetStarted() {
 
       <main className="flex-1 flex items-center justify-center mb-2">
         <div className="container px-4 md:px-6 w-full  py-8">
-          {!account.isConnected ? (
+          {!isConnected ? (
             <>
               <div className="flex flex-col items-center text-center mb-8">
                 <p className="text-gray-100 font-bold text-lg md:text-xl">
-                  {!account.isConnected && "Connect your wallet to start lending or borrowing crypto assets."}
+                  {!isConnected && "Connect your wallet to start lending or borrowing crypto assets."}
                 </p>
               </div>
 
@@ -154,12 +163,12 @@ export default function GetStarted() {
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-10">
-                <TabsColumn />
-                <AccountSummary balance={"000"} />
+                <TabsColumn balance={balance}/>
+                <AccountSummary balance={balance} />
               </div>
             </>
           )}
-          {!account.isConnected && (
+          {!isConnected && (
             <div className="mt-6 text-center text-sm text-gray-300">
               <p>
                 By using Velt, you agree to our{" "}

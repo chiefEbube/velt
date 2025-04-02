@@ -1,22 +1,28 @@
+import { fetchUsdtValue } from "@/lib/fetchUsdtValue";
 import { Button } from "./ui/button";
 
-export default function SupplyColumn() {
+export default function SupplyColumn({ balance }: { balance: string })  {
+    const usdt = fetchUsdtValue(balance)
     return (
         <>
             <div className="mb-12 mt-4">
-                <h2 className="text-xl font-bold mb-4">Your Supplies</h2>
-                <div className="flex gap-4 mb-4 justify-between bg-[#252542] rounded-lg p-6">
+                <h2 className="text-lg font-bold mb-4">Assets to supply</h2>
+                <div className="flex gap-4 mb-4 justify-between bg-[#252542] rounded-lg p-3 md:p-6">
                     <div>
-                        <div className="text-gray-400 text-sm">Balance</div>
-                        <div className="font-bold">$0.00</div>
+                        <div className="text-gray-400 text-xs md:text-sm">Asset</div>
+                        <div className="font-bold text-sm md:text-base">Metis</div>
                     </div>
                     <div>
-                        <div className="text-gray-400 text-sm">APY</div>
-                        <div className="font-bold">0%</div>
+                        <div className="text-gray-400 text-xs md:text-sm">Wallet Balance</div>
+                        <div className="font-bold text-sm md:text-base">${usdt}</div>
                     </div>
                     <div>
-                        <div className="text-gray-400 text-sm">Collateral</div>
-                        <div className="font-bold">$0.00</div>
+                        <div className="text-gray-400 text-xs md:text-sm">APY</div>
+                        <div className="font-bold text-sm md:text-base">4.5%</div>
+                    </div>
+                    <div>
+                        <div className="text-gray-400 text-xs md:text-sm">Can be collateral?</div>
+                        <div className="font-bold text-sm md:text-base text-green-400">yes</div>
                     </div>
                 </div>
             </div>
