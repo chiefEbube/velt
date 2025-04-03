@@ -1,16 +1,15 @@
 "use client"
 
 import Link from "next/link"
-import { Wallet } from "lucide-react"
+import { SquareArrowOutUpRight, Wallet, } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import AccountSummary from "../../components/AccountSummary"
 import TabsColumn from "../../components/TabsColumn"
-import { useAccount, useConnect, useDisconnect, useReadContract } from "wagmi"
+import { useAccount, useConnect, useDisconnect, useReadContract, useSwitchChain, useBalance } from "wagmi"
 import { injected } from 'wagmi/connectors'
 import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { useBalance } from "wagmi"
 import { metisSepolia } from "@/wagmi"
 import { abi } from "@/lib/abi"
 import weiToMetis, { fetchUsdtValue } from "@/lib/utils"
@@ -19,9 +18,14 @@ const LENDING_POOL_ADDRESS = '0x04286AE4E99ca61810BE89B385306b09cA05a953';
 
 export default function GetStarted() {
   const [isClient, setIsClient] = useState(false);
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, chainId } = useAccount()
   const { connectAsync, error } = useConnect()
   const { disconnect } = useDisconnect()
+  const { switchChain } = useSwitchChain()
+
+  const correctChainId = metisSepolia.id
+  const isCorrectNetwork = chainId === correctChainId
+
   const userBalance = useBalance({
     address,
     chainId: metisSepolia.id,
@@ -37,6 +41,7 @@ export default function GetStarted() {
   const userDeposit: bigint = data as bigint
   const userDepositInMetis = weiToMetis(userDeposit)
   const userDepositInUsdt = fetchUsdtValue(String(userDepositInMetis))
+
 
   const handleConnectWallet = async () => {
     try {
@@ -58,14 +63,28 @@ export default function GetStarted() {
   if (!isClient) return null;
 
   if (userBalance.isError) toast("Error fetching balance")
+
   const balance = userBalance.data?.value && userBalance.data?.decimals
     ? (Number(userBalance.data.value) / 10 ** userBalance.data.decimals).toFixed(4)
     : "0.00";
 
-
+  const usdt = fetchUsdtValue(balance)
+  const availableToBorrow = Number(userDepositInUsdt) * 0.8
 
   return (
     <div className="flex min-h-screen flex-col bg-[#0A0A0F] text-white">
+      {/* 🚨 Show Wrong Network Banner */}
+      {isConnected && !isCorrectNetwork && (
+        <div className="bg-red-500 text-white text-center p-2 font-bold text-sm">
+          🚨 Wrong Network! Please switch to Metis Sepolia.
+          <button
+            className="bg-blue-600 px-3 py-1 ml-2 rounded"
+            onClick={() => switchChain({ chainId: correctChainId })}
+          >
+            Switch Network
+          </button>
+        </div>
+      )}
       <nav className="px-4 sticky top-0 z-50 w-full border-b border-white/10 bg-[#1a1a2e]/95 backdrop-blur supports-[backdrop-filter]:bg-[#1a1a2e]/60">
         <div className="container mx-auto flex items-center justify-between py-4">
           <div className="flex items-center gap-2">
@@ -153,25 +172,44 @@ export default function GetStarted() {
           ) : (
             <>
               <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-10 h-10">
-                    <Image src="/metis.png" alt="metis logo" width={200} height={200} />
+                {
+                  isConnected && isCorrectNetwork &&
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-10 h-10">
+                      <Image src="/metis.png" alt="metis logo" width={200} height={200} />
+                    </div>
+                    <h1 className="text-2xl font-bold">Metis</h1>
                   </div>
-                  <h1 className="text-2xl font-bold">Metis</h1>
-                </div>
+                }
 
-                <div className="flex">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <div className="text-gray-400 text-sm flex items-center gap-1">Net worth</div>
-                      <div className="text-xl md:text-2xl font-bold">${userDepositInUsdt}</div>
+
+                <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                  <div className="grid grid-cols-3 gap-4 mb-2">
+                    <div className="text-center">
+                      <div className="text-gray-400 text-xs md:text-sm">Wallet Balance</div>
+                      <div className="text-lg md:text-2xl font-bold">{parseFloat(balance).toFixed(2)} tMETIS</div>
+                      <div className="text-xs text-gray-300">≈ ${usdt} USDT</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-gray-400 text-xs md:text-sm">Net worth</div>
+                      <div className="text-lg md:text-2xl font-bold">${userDepositInUsdt}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-gray-400 text-xs md:text-sm">Available to borrow</div>
+                      <div className="text-lg md:text-2xl font-bold">${availableToBorrow.toFixed(2)}</div>
                     </div>
                   </div>
+                  <Link href="https://faucet.metis.io/">
+                    <div className="flex items-start gap-2 bg-[#252542] rounded-md p-2 text-xs font-bold">
+                      <p>METIS SEPOLIA FAUCET</p>
+                      <SquareArrowOutUpRight className="h-3 w-3" />
+                    </div>
+                  </Link>
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-10">
                 <TabsColumn balance={balance} />
-                <AccountSummary balance={balance} userDepositInMetis={userDepositInMetis} userDepositInUsdt={userDepositInUsdt}/>
+                <AccountSummary userDepositInMetis={userDepositInMetis} />
               </div>
             </>
           )}

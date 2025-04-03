@@ -19,9 +19,9 @@ export default function SupplyColumn({ balance }: { balance: string }) {
     const { address } = useAccount();
     const [amount, setAmount] = useState("")
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const { writeContract } = useWriteContract();
+    const writeContract = useWriteContract();
     const usdt = fetchUsdtValue(balance)
-    const { watchAsset } = useWatchAsset();
+    const watchAsset = useWatchAsset();
 
     const handleDeposit = () => {
         if (!amount) {
@@ -31,7 +31,12 @@ export default function SupplyColumn({ balance }: { balance: string }) {
         // Convert amount to Wei (smallest unit)
         const amountInWei = BigInt((parseFloat(amount) * 1e18).toFixed(0));
 
-        writeContract(
+        if (parseFloat(amount) > parseFloat(balance)) {
+            toast("Deposit amount exceeds available balance.");
+            return;
+        }
+
+        writeContract.writeContract(
             {
                 abi,
                 address: LENDING_POOL_ADDRESS,
@@ -52,7 +57,7 @@ export default function SupplyColumn({ balance }: { balance: string }) {
 
     // Function to watch (add) Velt token to the user's wallet
     const addVeltTokenToWallet = () => {
-        watchAsset(
+        watchAsset.watchAsset(
             {
                 type: 'ERC20',
                 options: {
@@ -70,6 +75,10 @@ export default function SupplyColumn({ balance }: { balance: string }) {
                 }
             }
         );
+    };
+
+    const handleMaxClick = () => {
+        setAmount(balance)
     };
 
     return (
@@ -113,10 +122,22 @@ export default function SupplyColumn({ balance }: { balance: string }) {
                     />
                     <div className="flex items-center border-l border-white/20 bg-[#1a1a3a] px-3 text-sm">metis</div>
                 </div>
-                <div className="text-xs text-gray-300">Est. APY: 4.5%</div>
+                <div className="flex justify-between items-center">
+                    <div className="text-[10px] md:text-xs text-gray-300">Est. APY: 4.5%</div>
+                    <div className="text-gray-300 text-[10px] md:text-xs">Wallet balance: {balance}
+                        <Button
+                        variant="ghost"
+                        onClick={handleMaxClick}
+                        className="text-[10px] md:text-xs font-bold hover:text-white hover:bg-transparent"
+                    >
+                        MAX
+                    </Button>
+                    </div>
+                    
+                </div>
             </div>
-            <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)] cursor-pointer" onClick={handleDeposit}>
-                Start Lending
+            <Button disabled={writeContract.isPending} className={`w-full ${writeContract.isPending ? "cursor-progress" : "bg-gradient-to-r from-blue-600 to-purple-600 cursor-pointer"} hover:from-blue-700 hover:to-purple-700 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)]`} onClick={handleDeposit}>
+                {writeContract.isPending ? "Loading..." : "Start Lending"}
             </Button>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -127,12 +148,13 @@ export default function SupplyColumn({ balance }: { balance: string }) {
                     </DialogDescription>
                     <DialogFooter>
                         <Button
+                            disabled={watchAsset.isPending}
                             onClick={() => {
                                 addVeltTokenToWallet();
-                                setIsDialogOpen(false); // Close dialog after adding Velt token
+                                setIsDialogOpen(false);
                             }}
                         >
-                            Add Velt Token
+                            {watchAsset.isPending ? "Adding..." : "Add Velt Token"}
                         </Button>
                         <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>
                             No, Thanks
