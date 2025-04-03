@@ -5,26 +5,39 @@ import { Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import AccountSummary from "../../components/AccountSummary"
 import TabsColumn from "../../components/TabsColumn"
-import { useAccount, useConnect, useDisconnect } from "wagmi"
+import { useAccount, useConnect, useDisconnect, useReadContract } from "wagmi"
 import { injected } from 'wagmi/connectors'
 import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { useBalance } from "wagmi"
 import { metisSepolia } from "@/wagmi"
+import { abi } from "@/lib/abi"
+import weiToMetis, { fetchUsdtValue } from "@/lib/utils"
 
+const LENDING_POOL_ADDRESS = '0x04286AE4E99ca61810BE89B385306b09cA05a953';
 
 export default function GetStarted() {
   const [isClient, setIsClient] = useState(false);
   const { address, isConnected } = useAccount()
   const { connectAsync, error } = useConnect()
   const { disconnect } = useDisconnect()
-  const { data, isError } = useBalance({
+  const userBalance = useBalance({
     address,
     chainId: metisSepolia.id,
   });
 
-  // Connect wallet
+  const { data } = useReadContract({
+    abi,
+    address: LENDING_POOL_ADDRESS,
+    functionName: 'userDeposits',
+    args: [address],
+  })
+
+  const userDeposit: bigint = data as bigint
+  const userDepositInMetis = weiToMetis(userDeposit)
+  const userDepositInUsdt = fetchUsdtValue(String(userDepositInMetis))
+
   const handleConnectWallet = async () => {
     try {
       const result = await connectAsync({ connector: injected() })
@@ -44,8 +57,12 @@ export default function GetStarted() {
 
   if (!isClient) return null;
 
-  if (isError) toast("Error fetching balance")
-  const balance = data?.value ? (Number(data.value) / 10 ** data.decimals).toFixed(4) : "0.0000";
+  if (userBalance.isError) toast("Error fetching balance")
+  const balance = userBalance.data?.value && userBalance.data?.decimals
+    ? (Number(userBalance.data.value) / 10 ** userBalance.data.decimals).toFixed(4)
+    : "0.00";
+
+
 
   return (
     <div className="flex min-h-screen flex-col bg-[#0A0A0F] text-white">
@@ -147,24 +164,14 @@ export default function GetStarted() {
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <div className="text-gray-400 text-sm flex items-center gap-1">Net worth</div>
-                      <div className="text-xl md:text-2xl font-bold">$0.00</div>
-                    </div>
-                    <div>
-                      <div className="text-gray-400 text-sm flex items-center gap-1">
-                        Net APY
-                      </div>
-                      <div className="text-xl md:text-2xl font-bold">0%</div>
-                    </div>
-                    <div>
-                      <div className="text-gray-400 text-sm flex items-center gap-1">Health factor</div>
-                      <span className="text-xl md:text-2xl font-bold text-yellow-500">0</span>
+                      <div className="text-xl md:text-2xl font-bold">${userDepositInUsdt}</div>
                     </div>
                   </div>
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-10">
-                <TabsColumn balance={balance}/>
-                <AccountSummary balance={balance} />
+                <TabsColumn balance={balance} />
+                <AccountSummary balance={balance} userDepositInMetis={userDepositInMetis} userDepositInUsdt={userDepositInUsdt}/>
               </div>
             </>
           )}
