@@ -69,7 +69,7 @@ export default function GetStarted() {
     : "0.00";
 
   const usdt = fetchUsdtValue(balance)
-  const availableToBorrow = Number(userDepositInUsdt) * 0.8
+  const availableToBorrow = Number(userDepositInMetis) * 0.8
 
   return (
     <div className="flex min-h-screen flex-col bg-[#0A0A0F] text-white">
@@ -196,7 +196,7 @@ export default function GetStarted() {
                     </div>
                     <div className="text-center">
                       <div className="text-gray-400 text-xs md:text-sm">Available to borrow</div>
-                      <div className="text-lg md:text-2xl font-bold">${availableToBorrow.toFixed(2)}</div>
+                      <div className="text-lg md:text-2xl font-bold">${availableToBorrow.toFixed(4)}</div>
                     </div>
                   </div>
                   <Link href="https://faucet.metis.io/">
@@ -208,7 +208,7 @@ export default function GetStarted() {
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-10">
-                <TabsColumn balance={balance} />
+                <TabsColumn balance={balance} availableToBorrow={availableToBorrow}/>
                 <AccountSummary userDepositInMetis={userDepositInMetis} />
               </div>
             </>
