@@ -2,11 +2,9 @@
 pragma solidity ^0.8.23;
 
 interface ILendingPool {
-    function deposit(address asset, uint256 amount) external;
+    function userDeposits(address user) external view returns (uint256);
 
-    function withdraw(address asset, uint256 amount) external;
+    function deposit(address _onBehalfOf) external payable;
 
-    function borrow(address asset, uint256 amount) external;
-
-    function repay(address asset, uint256 amount) external;
+    function withdraw(uint256 _amount) external;
 }
