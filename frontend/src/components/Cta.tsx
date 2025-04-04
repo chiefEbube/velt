@@ -17,7 +17,7 @@ export default function Cta() {
                     </p>
                     <Button
                         className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-full
-                        shadow-[0_0_15px_rgba(79,70,229,0.5)]" onClick={() => {router.push("/app")}}
+                        shadow-[0_0_15px_rgba(79,70,229,0.5)]" onClick={() => {router.push("/home")}}
                     >
                         Get Started
                     </Button>
