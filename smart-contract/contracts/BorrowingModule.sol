@@ -9,6 +9,8 @@ contract BorrowingModule {
     IERC20 public veltToken;
     IERC20 public usdtToken;
 
+    uint256 public constant MAX_BORROW_LIMIT = 75; //75% Loan-to-Value (LTV) ratio
+
     mapping(address => uint256) public borrowedAmount;
 
     event Borrow(address indexed user, uint256 amount, uint256 timestamp);
@@ -21,9 +23,16 @@ contract BorrowingModule {
 
     function borrow(uint256 _amount) external {
         require(_amount > 0, "Amount must be greater than 0");
+
+        uint256 veltBalance = veltToken.balanceOf(msg.sender);
+        require(veltBalance > 0, "No VELT collateral");
+
+        // Allow borrowing up to 75% of VELT balance as USDT
+        uint256 maxBorrowable = (veltBalance * MAX_BORROW_LIMIT) / 100;
+
         require(
-            veltToken.balanceOf(msg.sender) >= _amount,
-            "Not enough VELT collateral"
+            _amount + borrowedAmount[msg.sender] <= maxBorrowable,
+            "Exceeds max borrow limit"
         );
 
         // Update borrowed amount
@@ -38,5 +47,12 @@ contract BorrowingModule {
     /// @notice Allows the owner or users to deposit USDT into the contract
     function depositUSDT(uint256 amount) external {
         usdtToken.transferFrom(msg.sender, address(this), amount);
+    }
+
+    function repay(uint256 _amount) external {
+        require(borrowedAmount[msg.sender] >= _amount, "Nothing to repay");
+
+        usdtToken.transferFrom(msg.sender, address(this), _amount);
+        borrowedAmount[msg.sender] -= _amount;
     }
 }
