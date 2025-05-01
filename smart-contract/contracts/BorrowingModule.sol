@@ -9,11 +9,17 @@ contract BorrowingModule {
     IERC20 public veltToken;
     IERC20 public usdtToken;
 
-    uint256 public constant MAX_BORROW_LIMIT = 75; //75% Loan-to-Value (LTV) ratio
+    uint256 public constant BASE_LTV = 75; // 75% LTV
+    uint256 public constant LIQUIDATION_THRESHOLD = 85; // 85% usage triggers liquidation
+    uint256 public constant INTEREST_RATE = 5; // 5% annual
+    uint256 public constant SECONDS_IN_YEAR = 365 days;
 
     mapping(address => uint256) public borrowedAmount;
+    mapping(address => uint256) public borrowTimestamps;
 
-    event Borrow(address indexed user, uint256 amount, uint256 timestamp);
+    event Borrow(address indexed user, uint256 amount);
+    event Repay(address indexed user, uint256 amount, uint256 interest);
+    event Liquidated(address indexed user, uint256 totalDebt);
 
     constructor(address _lendingPool, address _veltToken, address _usdtToken) {
         lendingPool = ILendingPool(_lendingPool);
@@ -22,26 +28,19 @@ contract BorrowingModule {
     }
 
     function borrow(uint256 _amount) external {
-        require(_amount > 0, "Amount must be greater than 0");
-
+        require(_amount > 0, "Amount must be greater than zero");
         uint256 veltBalance = veltToken.balanceOf(msg.sender);
-        require(veltBalance > 0, "No VELT collateral");
+        require(veltBalance > 0, "No collateral");
 
-        // Allow borrowing up to 75% of VELT balance as USDT
-        uint256 maxBorrowable = (veltBalance * MAX_BORROW_LIMIT) / 100;
+        uint256 maxBorrow = (veltBalance * BASE_LTV) / 100;
+        uint256 newTotalBorrowed = borrowedAmount[msg.sender] + _amount;
+        require(newTotalBorrowed <= maxBorrow, "Exceeds LTV");
 
-        require(
-            _amount + borrowedAmount[msg.sender] <= maxBorrowable,
-            "Exceeds max borrow limit"
-        );
+        borrowedAmount[msg.sender] = newTotalBorrowed;
+        borrowTimestamps[msg.sender] = block.timestamp;
 
-        // Update borrowed amount
-        borrowedAmount[msg.sender] += _amount;
-
-        // Transfer USDT from this contract to the user
         usdtToken.transfer(msg.sender, _amount);
-
-        emit Borrow(msg.sender, _amount, block.timestamp);
+        emit Borrow(msg.sender, _amount);
     }
 
     /// @notice Allows the owner or users to deposit USDT into the contract
@@ -52,7 +51,42 @@ contract BorrowingModule {
     function repay(uint256 _amount) external {
         require(borrowedAmount[msg.sender] >= _amount, "Nothing to repay");
 
-        usdtToken.transferFrom(msg.sender, address(this), _amount);
+        uint256 interest = calculateInterest(msg.sender);
+        uint256 totalOwed = _amount + interest;
+
+        usdtToken.transferFrom(msg.sender, address(this), totalOwed);
         borrowedAmount[msg.sender] -= _amount;
+        borrowTimestamps[msg.sender] = block.timestamp;
+
+        emit Repay(msg.sender, _amount, interest);
+    }
+
+    function calculateInterest(address _user) public view returns (uint256) {
+        uint256 principal = borrowedAmount[_user];
+        uint256 timeElapsed = block.timestamp - borrowTimestamps[_user];
+        return
+            (principal * INTEREST_RATE * timeElapsed) / (100 * SECONDS_IN_YEAR);
+    }
+
+    function liquidate(address user) external {
+        uint256 principal = borrowedAmount[user];
+        require(principal > 0, "No debt");
+
+        uint256 interest = calculateInterest(user);
+        uint256 totalDebt = principal + interest;
+
+        uint256 veltBalance = veltToken.balanceOf(user);
+        uint256 maxAllowed = (veltBalance * LIQUIDATION_THRESHOLD) / 100;
+
+        require(totalDebt > maxAllowed, "Health factor OK");
+
+        // Burn/seize VELT from user
+        veltToken.transferFrom(user, address(this), veltBalance);
+
+        // Reset state
+        borrowedAmount[user] = 0;
+        borrowTimestamps[user] = 0;
+
+        emit Liquidated(user, totalDebt);
     }
 }
