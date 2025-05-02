@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export default function weiToMetis(wei: bigint) {
+export function weiToMetis(wei: bigint) {
   const WEI_IN_METIS = BigInt(1e18);
   return Number(wei) / Number(WEI_IN_METIS);
 }

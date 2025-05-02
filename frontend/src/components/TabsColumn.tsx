@@ -2,7 +2,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import BorrowColumn from "./BorrowColumn"
 import SupplyColumn from "./SupplyColumn"
 
-export default function TabsColumn({ balance, availableToBorrow }: { balance: string; availableToBorrow: number }){
+interface TabsColumnProps {
+  balance: string;
+  availableToBorrow: number;
+  refetchDeposit: () => void;
+  refetchBorrow: () => void;
+}
+
+export default function TabsColumn({
+  balance,
+  availableToBorrow,
+  refetchDeposit,
+  refetchBorrow,
+}: TabsColumnProps) {
   return (
     <div className="relative w-full overflow-hidden rounded-xl border border-white/10 bg-[#1a1a3a] p-2 shadow-xl">
       <Tabs defaultValue="lend" className="w-full">
@@ -21,10 +33,10 @@ export default function TabsColumn({ balance, availableToBorrow }: { balance: st
           </TabsTrigger>
         </TabsList>
         <TabsContent value="lend" className="p-4 space-y-4">
-          <SupplyColumn balance={balance}/>
+          <SupplyColumn balance={balance} refetchDeposit={refetchDeposit}/>
         </TabsContent>
         <TabsContent value="borrow" className="p-4 space-y-4">
-         <BorrowColumn availableToBorrow={availableToBorrow}/>
+          <BorrowColumn availableToBorrow={availableToBorrow} refetchBorrow={refetchBorrow}/>
         </TabsContent>
       </Tabs>
     </div>

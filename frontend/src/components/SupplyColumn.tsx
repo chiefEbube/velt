@@ -7,6 +7,8 @@ import { useAccount, useWriteContract, useWatchAsset } from "wagmi";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { fetchUsdtValue } from "@/lib/utils";
+import { ArrowUpRight, ExternalLink, Wallet } from "lucide-react";
+import Link from "next/link";
 
 
 const LENDING_POOL_ADDRESS = '0x04286AE4E99ca61810BE89B385306b09cA05a953'
@@ -15,13 +17,14 @@ const VELT_TOKEN_ADDRESS = '0x25DE93cFf41aa47C1133f44e89bE1962cEa52f73';
 const VELT_TOKEN_SYMBOL = 'VELT';
 const VELT_TOKEN_DECIMALS = 18;
 
-export default function SupplyColumn({ balance }: { balance: string }) {
+export default function SupplyColumn({ balance, refetchDeposit }: { balance: string, refetchDeposit: () => void }) {
     const { address } = useAccount();
     const [amount, setAmount] = useState("")
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const writeContract = useWriteContract();
     const usdt = fetchUsdtValue(balance)
     const watchAsset = useWatchAsset();
+    const hasBalance = Number.parseFloat(balance) > 0
 
     const handleDeposit = () => {
         if (!amount) {
@@ -46,6 +49,7 @@ export default function SupplyColumn({ balance }: { balance: string }) {
             },
             {
                 onSuccess: () => {
+                    refetchDeposit();
                     toast("Transaction submitted successfully:");
                     setIsDialogOpen(true);
                 },
@@ -80,6 +84,36 @@ export default function SupplyColumn({ balance }: { balance: string }) {
     const handleMaxClick = () => {
         setAmount(balance)
     };
+
+    if (!hasBalance) {
+        return (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="bg-[#252542] rounded-full p-4 mb-4">
+                    <Wallet className="w-8 h-8 text-purple-400" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">No Metis tokens in your wallet</h3>
+                <p className="text-gray-400 mb-6 max-w-md">
+                    You need Metis tokens to start lending. Get some test tokens from the Metis Sepolia faucet.
+                </p>
+                <div className="bg-[#252542] rounded-lg p-6 w-full max-w-md mb-6">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="bg-purple-600/20 rounded-full p-2">
+                            <ExternalLink className="w-5 h-5 text-purple-400" />
+                        </div>
+                        <span className="font-medium">Get test tokens</span>
+                    </div>
+                    <p className="text-sm text-gray-400 mb-4">
+                        Visit the Metis Sepolia faucet to get free test tokens for your wallet.
+                    </p>
+                    <Link href="https://faucet.metis.io/" target="_blank" rel="noopener noreferrer">
+                        <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)]">
+                            Go to Metis Faucet <ArrowUpRight className="ml-2 w-4 h-4" />
+                        </Button>
+                    </Link>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <>
@@ -126,14 +160,14 @@ export default function SupplyColumn({ balance }: { balance: string }) {
                     <div className="text-[10px] md:text-xs text-gray-300">Est. APY: 4.5%</div>
                     <div className="text-gray-300 text-[10px] md:text-xs">Wallet balance: {balance}
                         <Button
-                        variant="ghost"
-                        onClick={handleMaxClick}
-                        className="text-[10px] md:text-xs font-bold hover:text-white hover:bg-transparent"
-                    >
-                        MAX
-                    </Button>
+                            variant="ghost"
+                            onClick={handleMaxClick}
+                            className="text-[10px] md:text-xs font-bold hover:text-white hover:bg-transparent"
+                        >
+                            MAX
+                        </Button>
                     </div>
-                    
+
                 </div>
             </div>
             <Button disabled={writeContract.isPending} className={`w-full ${writeContract.isPending ? "cursor-progress" : "bg-gradient-to-r from-blue-600 to-purple-600 cursor-pointer"} hover:from-blue-700 hover:to-purple-700 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)]`} onClick={handleDeposit}>

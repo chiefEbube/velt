@@ -12,9 +12,11 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import { metisSepolia } from "@/wagmi"
 import { abi } from "@/lib/abi"
-import weiToMetis, { fetchUsdtValue } from "@/lib/utils"
+import { borrowAbi } from "@/lib/borrowAbi"
+import { weiToMetis } from "@/lib/utils"
 
 const LENDING_POOL_ADDRESS = '0x04286AE4E99ca61810BE89B385306b09cA05a953';
+const BORROW_CONTRACT_ADDRESS = '0xD6C8805df4aef21d8fD88A06747a3f4465EF7aFf'
 
 export default function GetStarted() {
   const [isClient, setIsClient] = useState(false);
@@ -31,16 +33,55 @@ export default function GetStarted() {
     chainId: metisSepolia.id,
   });
 
-  const { data } = useReadContract({
+  const { data, refetch: refetchDeposit } = useReadContract({
     abi,
     address: LENDING_POOL_ADDRESS,
     functionName: 'userDeposits',
     args: [address],
   })
 
+  const { data: borrowedAmountRaw, refetch: refetchBorrow } = useReadContract({
+    abi: borrowAbi,
+    address: BORROW_CONTRACT_ADDRESS,
+    functionName: "borrowedAmount",
+    args: [address],
+    chainId: metisSepolia.id,
+  });
+
+  // const { data: interestAmountRaw } = useReadContract({
+  //   abi: borrowAbi,
+  //   address: BORROW_CONTRACT_ADDRESS,
+  //   functionName: "calculateInterest",
+  //   args: [address],
+  //   chainId: metisSepolia.id,
+  // });
+
+  const { data: metisPriceRaw } = useReadContract({
+    abi: borrowAbi,
+    address: BORROW_CONTRACT_ADDRESS,
+    functionName: "getMetisPrice",
+    chainId: metisSepolia.id,
+  });
+
+  const userBorrowed: bigint = borrowedAmountRaw as bigint
+  const borrowedAmount = BigInt(userBorrowed || 0);
+
+  // const userInterest: bigint = interestAmountRaw as bigint
+  // const interestAmount = BigInt(userInterest || 0);
+
+  const debt = weiToMetis(borrowedAmount)
+  // const totalDebt = weiToMetis(borrowedAmount) + weiToMetis(interestAmount)
+
   const userDeposit: bigint = data as bigint
   const userDepositInMetis = weiToMetis(userDeposit)
-  const userDepositInUsdt = fetchUsdtValue(String(userDepositInMetis))
+
+
+  const usdtPrice = metisPriceRaw ? Number(metisPriceRaw) : 0;
+  const formattedUsdtPrice = Number(usdtPrice) / 10 ** 8;
+  const userDepositInUsdt = userDepositInMetis * formattedUsdtPrice;
+  const availableToBorrow = userDepositInUsdt - debt
+
+  const hasOpenPosition = userDepositInMetis > 0 || debt > 0;
 
 
   const handleConnectWallet = async () => {
@@ -68,8 +109,8 @@ export default function GetStarted() {
     ? (Number(userBalance.data.value) / 10 ** userBalance.data.decimals).toFixed(4)
     : "0.00";
 
-  const usdt = fetchUsdtValue(balance)
-  const availableToBorrow = Number(userDepositInMetis) * 0.8
+  const usdt = (parseFloat(balance) * formattedUsdtPrice).toFixed(2);
+
 
   return (
     <div className="flex min-h-screen flex-col bg-[#0A0A0F] text-white">
@@ -208,8 +249,12 @@ export default function GetStarted() {
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-10">
-                <TabsColumn balance={balance} availableToBorrow={availableToBorrow}/>
-                <AccountSummary userDepositInMetis={userDepositInMetis} />
+                <TabsColumn balance={balance} availableToBorrow={availableToBorrow} refetchDeposit={refetchDeposit} refetchBorrow={refetchBorrow} />
+                <AccountSummary
+                  userDepositInMetis={userDepositInMetis}
+                  debt={debt}
+                  hasOpenPosition={hasOpenPosition}
+                />
               </div>
             </>
           )}
